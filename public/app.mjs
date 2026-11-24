@@ -1,5 +1,5 @@
 import { copySession } from './engine.mjs'
-import { practice, tradovate } from './broker.mjs'
+import { practice, tradovate, signIn } from './broker.mjs'
 const $ = id => document.getElementById(id)
 let broker, accounts = [], token, active = false, busy = false
 const mode = () => $('mode').value
@@ -15,6 +15,7 @@ function message(text) { $('message').textContent = text }
 function controls() {
   $('mode').disabled = busy
   $('connect').disabled = busy
+  $('signIn').disabled = $('loginFields').disabled = busy
   $('settings').disabled = busy || !accounts.length
   $('start').disabled = busy || accounts.length < 2
   $('start').hidden = busy && active
@@ -31,7 +32,8 @@ function followers() {
 }
 async function load() {
   busy = true; accounts = []; controls(); message('')
-  $('connect').hidden = mode() === 'practice'
+  $('credentials').hidden = mode() === 'practice' || Boolean(token)
+  $('connect').hidden = !token
   $('connect').textContent = token ? 'Disconnect' : 'Connect Tradovate'
   $('practice').hidden = mode() !== 'practice'
   $('detail').textContent = mode() === 'practice' ? 'Local practice accounts' : 'Sign in with your own Tradovate account.'
@@ -48,21 +50,37 @@ async function load() {
   } catch(e) { message(e.message) }
   finally { busy = false; controls() }
 }
-async function oauth(body) {
-  const r = await fetch('/.netlify/functions/oauth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-  const data = await r.json()
-  if (!r.ok) throw Error(data.error)
-  return data
+function deviceId() {
+  let id = localStorage.getItem('relay-device')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('relay-device', id)
+  }
+  return id
 }
-$('connect').onclick = async () => {
-  if (token) { token = null; await load(); return }
-  busy = true; controls()
+$('credentials').onsubmit = async event => {
+  event.preventDefault()
+  if (busy) return
+  busy = true; controls(); message('Connecting to Tradovate…')
   try {
-    sessionStorage.setItem('relay-mode',mode())
-    location.assign((await oauth({start:true})).url)
-  } catch(e) {message(e.message); busy = false; controls()}
+    token = await signIn(mode(), {
+      name: $('username').value, password: $('password').value,
+      cid: $('cid').value, sec: $('secret').value
+    }, deviceId())
+    $('credentials').reset()
+    await load()
+  } catch (e) { message(e.message) }
+  finally { $('password').value = $('secret').value = ''; busy = false; controls() }
 }
-$('mode').onchange = async () => { token = null; await load() }
+async function disconnect() {
+  token = null
+  $('credentials').reset()
+  $('events').replaceChildren()
+  $('empty').hidden = false
+  await load()
+}
+$('connect').onclick = disconnect
+$('mode').onchange = disconnect
 $('leader').onchange = followers
 function stop(reason) {
   if (!active) return
@@ -90,16 +108,4 @@ $('start').onclick = async () => {
   finally {busy = active = false; $('status').textContent='Idle'; controls()}
 }
 for (const action of ['Buy','Sell']) $(action.toLowerCase()).onclick = ()=>broker.add(Number($('leader').value),action,1)
-const params = new URLSearchParams(location.search)
-let connectionError
-if (params.has('code') || params.has('error')) {
-  history.replaceState(null,'','/')
-  $('mode').value = sessionStorage.getItem('relay-mode') === 'live' ? 'live':'demo'
-  sessionStorage.removeItem('relay-mode')
-  try {
-    if (!params.has('code')) throw Error('Sign-in cancelled.')
-    token = (await oauth({code:params.get('code'),state:params.get('state')})).token
-  } catch(e) {connectionError = e.message}
-}
 await load()
-if (connectionError) message(connectionError)

@@ -2,7 +2,15 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Relay · Tradovate trade copier</title><link rel="stylesheet" href="/style.css"><script type="module" src="/app.mjs"></script></head>
 <body><header><div class="brand"><i aria-hidden="true">⇄</i> Relay</div><span>Tradovate trade copier</span></header>
 <main><div class="intro"><div><h1>Copier workspace</h1><p>Mirror new leader fills to your selected accounts.</p></div><strong id="status" role="status">Idle</strong></div>
-<section class="connection"><div><h2>Connection</h2><p id="detail">Local practice accounts</p></div><div class="actions"><select id="mode" aria-label="Connection environment"><option value="practice">Practice</option><option value="demo">Tradovate demo</option><option value="live">Tradovate live</option></select><button id="connect" hidden>Connect Tradovate</button></div></section>
+<section class="connection"><div><h2>Connection</h2><p id="detail">Local practice accounts</p></div><div class="actions"><select id="mode" aria-label="Connection environment"><option value="practice">Practice</option><option value="demo">Tradovate demo</option><option value="live">Tradovate live</option></select><button id="connect" hidden>Disconnect</button></div></section>
+<form id="credentials" hidden method="post" autocomplete="off">
+<h2>Connect your Tradovate account</h2><p>Your browser sends these details directly to Tradovate.</p>
+<fieldset id="loginFields" class="login-fields">
+<label>Tradovate username<input id="username" required autocapitalize="none" spellcheck="false"></label>
+<label>Password for this API key<input id="password" type="password" required></label>
+<label>Client ID (CID)<input id="cid" inputmode="numeric" pattern="[0-9]+" required></label>
+<label>API key (secret)<input id="secret" type="password" required></label>
+</fieldset><button type="submit" id="signIn" class="primary">Connect account</button></form>
 <div class="grid"><section><h2>Copy settings</h2><fieldset id="settings"><label for="leader">Leader account</label><select id="leader"></select><div class="label">Follower accounts</div><div id="followers"></div><label for="cap">Max contracts per copied fill</label><input id="cap" type="number" min="1" step="1" value="1"><small>A larger fill stops the session for review.</small></fieldset><p class="note">Start with aligned positions. Copied fills submit market orders. Stops and targets are copied only when they fill. Keep this tab open and visible.</p><button id="start" class="primary">Start copying</button><button id="stop" hidden>Stop copying</button></section>
 <section class="activity"><div class="sectionhead"><h2>Session activity</h2><span>Local time</span></div><p id="empty">Session events and follower order IDs will appear here.</p><ol id="events" aria-live="polite"></ol></section></div>
 <section class="connection" id="practice"><div><h2>Try a leader fill</h2><p>Generate one simulated MNQ contract in your practice leader.</p></div><div class="actions"><button id="buy" disabled>Buy 1</button><button id="sell" disabled>Sell 1</button></div></section>

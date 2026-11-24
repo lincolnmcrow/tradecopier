@@ -6,11 +6,9 @@ A Netlify-ready browser app for copying new futures fills 1:1 from one Tradovate
 Open the site in Practice, select Practice A as leader, check Practice B or C, and choose **Start copying**. Press **Buy 1** or **Sell 1** and watch each simulated follower order appear in Session activity. Practice runs locally without OAuth or API access.
 
 ## Publish on Netlify
-1. Import this GitHub repository into Netlify and choose the `main` branch. The included netlify.toml publishes `public` and deploys `netlify/functions`. Leave the build command empty. Deploy once to get your HTTPS site address.
-2. Register a Tradovate OAuth application in Application Settings → API Access → OAuth Registration. Set the redirect URI to your exact production origin with a trailing slash, e.g. `https://your-site.netlify.app/`. Enable the permissions needed to read accounts, contracts, orders and fills, and to place orders. Confirm your registration and intended users have Tradovate API access for the chosen environment.
-3. In Netlify project configuration, add `TRADOVATE_CLIENT_ID`, `TRADOVATE_CLIENT_SECRET`, and `TRADOVATE_REDIRECT_URI` with Functions scope. Use the exact URI registered above. Redeploy after setting them. Keep the secret out of Git.
-4. On the deployed site choose **Tradovate demo** → **Connect Tradovate**. Sign in, choose your leader and followers and start copying. Use an external Tradovate demo order to verify the leader fill, follower quantity, execution and exit in the Tradovate platform. Each user needs two or more accounts visible in that environment.
-5. Share the site address. Live mode requires a fresh connection when switching environments and explicit confirmation when starting.
+1. Import this repository into Netlify and choose `main`. Leave the build command empty. The publish directory is `public`. Deploy and share the HTTPS site address. All connection details are entered by each user on the site.
+2. Each friend chooses **Tradovate demo** or **Tradovate live** and enters their own username, password, numeric client ID (CID) and API key (secret). Use the dedicated API password if configured for that key. Their key needs account, contract, order and fill access plus order placement permission.
+3. Choose a leader and at least one follower visible under that login. Start copying and trade the leader through Tradovate from a separate device or window while keeping the copier visible. Verify a demo entry and exit in the broker platform before using Live.
 
 ## Execution behavior
 - Before starting, check that account positions match and review working orders in Tradovate. The copier baselines existing fills and does not align starting positions.
@@ -19,9 +17,9 @@ Open the site in Practice, select Practice A as leader, check Practice B or C, a
 - Keep the tab visible on an awake computer. Hiding it stops copying. A disconnect, uncertain response, expired token or interrupted polling cycle stops the run. Inspect and reconcile every account in Tradovate before restarting. Restarting baselines the current history and skips fills missed during the interruption.
 - Stop prevents further submissions. An in-flight order may complete. Stop does not cancel orders or flatten positions.
 - Run only one copier for a given account group. The browser locks concurrent sessions on this origin within the same browser profile. Separate devices, deployments and profiles cannot coordinate.
-- OAuth uses a short-lived HTTP-only state cookie and exchanges the authorization code in a Netlify Function. The browser keeps the resulting token in memory and calls Tradovate directly. Refreshing or disconnecting clears the local token. Session activity is in memory and retains the latest 200 entries.
+- Credentials go directly from the browser to the selected Tradovate API over HTTPS. The app stores only a random device identifier in local storage. The access token and activity history stay in tab memory. Refresh to clear the session, or stop and disconnect to switch users.
 
 ## Local checks
-Use Node 20+ and run `node --test`. For local Practice, run `python3 -m http.server 8080 --directory public` and open localhost:8080. Broker OAuth requires the registered HTTPS site and the deployed function.
+Use Node 20+ and run `node --test`. For local Practice, run `python3 -m http.server 8080 --directory public` and open localhost:8080.
 
-[Tradovate API](https://api.tradovate.com/) · [OAuth registration](https://tradovate.zendesk.com/hc/en-us/articles/4408935298707-How-Do-I-Register-an-OAuth-App) · [Official OAuth example](https://github.com/tradovate/example-api-oauth)
+[Tradovate API](https://api.tradovate.com/)

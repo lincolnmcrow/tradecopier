@@ -1,5 +1,25 @@
+function apiBase(mode) {
+  if (!['live', 'demo'].includes(mode)) throw Error('Choose a Tradovate environment.')
+  return 'https://' + mode + '.tradovateapi.com/v1/'
+}
+
+export async function signIn(mode, { name, password, cid, sec }, deviceId) {
+  if (!name.trim() || !password || !sec.trim() || !/^\d+$/.test(cid.trim()) || !Number.isSafeInteger(Number(cid)) || Number(cid) <= 0)
+    throw Error('Enter your username, password, numeric client ID and API key.')
+  const response = await fetch(apiBase(mode) + 'auth/accesstokenrequest', {
+    method: 'POST', credentials: 'omit', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(15000),
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ name: name.trim(), password, cid: Number(cid), sec: sec.trim(), appId: 'Relay', appVersion: '1.0', deviceId })
+  })
+  const data = await response.json()
+  if (data['p-ticket'] || response.status === 429) throw Error('Tradovate limited sign-in attempts. Wait before trying again.')
+  if (!response.ok || typeof data.accessToken !== 'string' || !data.accessToken)
+    throw Error('Tradovate declined sign-in. Check your credentials, environment and any device approval from Tradovate.')
+  return data.accessToken
+}
+
 export function tradovate(mode, token) {
-  const base = mode === 'live' ? 'https://live.tradovateapi.com/v1/' : 'https://demo.tradovateapi.com/v1/'
+  const base = apiBase(mode)
   async function call(path, body) {
     const r = await fetch(base + path, {method:body ? 'POST':'GET', cache:'no-store', signal:AbortSignal.timeout(9000),
       headers:{Authorization:'Bearer '+token, 'Content-Type':'application/json'}, body:JSON.stringify(body)})
