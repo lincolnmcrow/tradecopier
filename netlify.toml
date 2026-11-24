@@ -1,0 +1,10 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://demo.tradovateapi.com https://live.tradovateapi.com; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'none'"
