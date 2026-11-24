@@ -2,8 +2,20 @@
   publish = "public"
 
 [[headers]]
-  for = "/*"
+  for = "/"
   [headers.values]
     Referrer-Policy = "no-referrer"
     X-Content-Type-Options = "nosniff"
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://demo.tradovateapi.com https://live.tradovateapi.com; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://demo.tradovateapi.com https://live.tradovateapi.com wss://md.tradovateapi.com https://api.topstepx.com https://*.projectx.com; frame-src 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'none'"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://demo.tradovateapi.com https://live.tradovateapi.com wss://md.tradovateapi.com https://api.topstepx.com https://*.projectx.com; frame-src 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'none'"
+    Referrer-Policy = "no-referrer"
+
+[[headers]]
+  for = "/market*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'none'; script-src 'self' https://s3.tradingview.com; style-src 'unsafe-inline'; frame-src https://*.tradingview.com https://*.tradingview-widget.com; base-uri 'none'; form-action 'none'"
+    Referrer-Policy = "no-referrer"
